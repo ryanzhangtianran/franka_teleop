@@ -597,7 +597,6 @@ if __name__ == "__main__":
             self.gripper_reverse = robot["gripper_reverse"]
             self.control_mode = robot["control_mode"]
 
-
             # cameras config
             self.wrist_cam_serial: str = cam["wrist_cam_serial"]
             self.exterior_cam_serial: str = cam["exterior_cam_serial"]

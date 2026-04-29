@@ -7,7 +7,6 @@ Factory for creating teleoperation instances.
 from .base_teleop import BaseTeleop
 from .config_teleop import (
     BaseTeleopConfig,
-    DynamixelTeleopConfig,
     SpacemouseTeleopConfig,
     OculusTeleopConfig,
 )
@@ -26,12 +25,7 @@ def create_teleop(config: BaseTeleopConfig) -> BaseTeleop:
     Raises:
         ValueError: If the control mode is not supported
     """
-    if isinstance(config, DynamixelTeleopConfig) or config.control_mode == "isoteleop":
-        from .dynamixel_teleop import DynamixelTeleop
-
-        return DynamixelTeleop(config if isinstance(config, DynamixelTeleopConfig) else DynamixelTeleopConfig())
-    
-    elif isinstance(config, SpacemouseTeleopConfig) or config.control_mode == "spacemouse":
+    if isinstance(config, SpacemouseTeleopConfig) or config.control_mode == "spacemouse":
         from .spacemouse_teleop import SpacemouseTeleop
 
         return SpacemouseTeleop(config if isinstance(config, SpacemouseTeleopConfig) else SpacemouseTeleopConfig())
@@ -60,9 +54,7 @@ def create_teleop_config(control_mode: str, **kwargs) -> BaseTeleopConfig:
     Raises:
         ValueError: If the control mode is not supported
     """
-    if control_mode == "isoteleop":
-        return DynamixelTeleopConfig(**kwargs)
-    elif control_mode == "spacemouse":
+    if control_mode == "spacemouse":
         return SpacemouseTeleopConfig(**kwargs)
     elif control_mode == "oculus":
         return OculusTeleopConfig(**kwargs)
@@ -83,15 +75,7 @@ def get_action_features(control_mode: str, use_gripper: bool = True) -> dict:
     Returns:
         Dictionary of action features
     """
-    if control_mode == "isoteleop":
-        features = {}
-        for i in range(7):
-            features[f"joint_{i+1}.pos"] = float
-        if use_gripper:
-            features["gripper_position"] = float
-        return features
-    
-    elif control_mode in ["spacemouse", "oculus"]:
+    if control_mode in ["spacemouse", "oculus"]:
         features = {}
         for axis in ["x", "y", "z", "rx", "ry", "rz"]:
             features[f"delta_ee_pose.{axis}"] = float
