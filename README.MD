@@ -30,36 +30,58 @@ The Oculus Quest controller provides 6-DoF tracking for intuitive end-effector c
 - **A Button**: Request robot reset
 - **Right controller pose**: Controls end-effector delta pose
 
-## 0. Franka Control Instructions
-
-In this version, we use [Polymetis](https://polymetis-docs.github.io/) to control Franka. Since Polymetis does not support Python 3.10 and is recommended to run on NUC separately, we use Zerorpc for remote communication implementation. The specific process is as follows:
+## 0. Franka Control via Polymetis
 
 ### 0.1 Install [Polymetis](https://polymetis-docs.github.io/) on NUC
 
-We have open-sourced the optimized source code for Franka at [Polymetis](https://github.com/Shenzhaolong1330/fairo-franka/tree/main). For detailed installation instructions, please refer to [FRANKA.md](https://github.com/Shenzhaolong1330/fairo-franka/blob/main/polymetis/FRANKA.md).
-
-### 0.2. Start Server on NUC
-
-Start [launch_robot](https://github.com/Shenzhaolong1330/fairo-franka/blob/main/polymetis/polymetis/python/scripts/launch_robot.py), [launch_gripper](https://github.com/Shenzhaolong1330/fairo-franka/blob/main/polymetis/polymetis/python/scripts/launch_gripper.py), and [franka_interface_server](https://github.com/Shenzhaolong1330/fairo-franka/blob/main/polymetis/polymetis/python/polymetis/franka_interface_server.py) respectively.
-
+1. Requirement of libfranka:
+```bash
+wget https://github.com/frankarobotics/libfranka/releases/download/<libfranka_version>/libfranka_<libfranka_version>_<ubuntu_codename>_amd64.deb
+sudo dpkg -i libfranka_<libfranka_version>_<ubuntu_codename>_amd64.deb
 ```
-# On the NUC
+
+Choose a specific version of libfranka according to your machine.
+
+The following example installs **libfranka 0.19.0** on **Ubuntu 22.04 (Jammy)**:
+```bash
+wget https://github.com/frankarobotics/libfranka/releases/download/0.19.0/libfranka_0.19.0_jammy_amd64.deb
+sudo dpkg -i libfranka_0.19.0_jammy_amd64.deb
+```
+
+2. Clone repo:
+```bash
+git clone https://github.com/ryanzhangtianran/polymetis.git
+cd polymetis
+```
+
+3. Create an environment:
+```bash
+conda env create -f ./polymetis/environment.yml
+conda activate polymetis
+```
+
+4. Install
+```bash
+cd polymetis
+pip install -e .
+
+mkdir build && cd build
+cmake -DBUILD_FRANKA=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_DOCS=ON ..
+make -j32
+```
+
+### 0.2. Usage
+If you want to use the interface to control the Franka robot, follow the steps below:
+
+```bash
+cd polymetis/polymetis/python/scripts
+
 python launch_robot.py robot_client=franka_hardware
 python launch_gripper.py gripper=franka_hand
-python franka_interface_server.py
+python launch_server.py
 ```
 
-<!-- ### 0.3 Start [interface client](lerobot_robot_franka\lerobot_robot_franka\franka_interface_client.py) locally
-
-Before attempting to connect to Franka, start the [interface client](lerobot_robot_franka\lerobot_robot_franka\franka_interface_client.py).
-
-```
-# On the local machine
-python franka_interface_client.py
-```
-
-The functions in the [interface client](lerobot_robot_franka\lerobot_robot_franka\franka_interface_client.py) are basically the same as those in Polymetis. For usage, please refer to [Polymetis](https://polymetis-docs.github.io/).
-         -->
+And run `sudo pkill -9 run_server` after launching the robot.
 
 ## 1. Environment Setup
 ### 1.1 Create and Activate Conda Environment
