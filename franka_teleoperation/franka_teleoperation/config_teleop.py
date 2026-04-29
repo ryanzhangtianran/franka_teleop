@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List
 
 from lerobot.teleoperators.config import TeleoperatorConfig
 
@@ -8,21 +8,8 @@ from lerobot.teleoperators.config import TeleoperatorConfig
 @dataclass
 class BaseTeleopConfig(TeleoperatorConfig):
     """Base configuration for all teleoperation modes."""
-    control_mode: str = "isoteleop"
+    control_mode: str = "spacemouse"
     use_gripper: bool = True
-
-
-@TeleoperatorConfig.register_subclass("dynamixel_teleop")
-@dataclass
-class DynamixelTeleopConfig(BaseTeleopConfig):
-    """Configuration for Dynamixel-based isomorphic teleoperation."""
-    control_mode: str = "isoteleop"
-    port: str = "/dev/ttyUSB0"
-    hardware_offsets: List[float] = field(default_factory=lambda: [0.0] * 7)
-    joint_ids: List[int] = field(default_factory=lambda: [0, 1, 2, 3, 4, 5, 6])
-    joint_offsets: List[float] = field(default_factory=lambda: [0.0] * 7)
-    joint_signs: List[int] = field(default_factory=lambda: [1, 1, 1, 1, 1, 1, 1])
-    gripper_config: Optional[Tuple[int, float, float]] = None  # (id, min, max)
 
 
 @TeleoperatorConfig.register_subclass("spacemouse_teleop")
@@ -52,7 +39,3 @@ class OculusTeleopConfig(BaseTeleopConfig):
     ik_ori_weight: float = 0.5          # IK orientation task weight
     ik_joints_weight: float = 0.2       # IK joints anchoring task weight (7-DOF redundancy)
     ik_regularization: float = 1e-4     # IK regularization weight
-
-
-# Legacy compatibility: FrankaTeleopConfig maps to DynamixelTeleopConfig
-FrankaTeleopConfig = DynamixelTeleopConfig

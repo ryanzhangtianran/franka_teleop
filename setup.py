@@ -20,7 +20,6 @@ setup(
     ],
     scripts=[
         "scripts/tools/map_gripper.sh",
-        "scripts/tools/check_master_port.sh",
     ],
     entry_points={
         "console_scripts": [
@@ -30,8 +29,6 @@ setup(
             "franka-visualize = scripts.core.run_visualize:main",
             "franka-reset = scripts.core.reset_robot:main",
             "franka-train = scripts.core.run_train:main",
-            # utils commands (data utilities)
-            "utils-joint-offsets = scripts.utils.teleop_joint_offsets:main",
 
             # tools commands (helper tools)
             "tools-check-dataset = scripts.tools.check_dataset_info:main",

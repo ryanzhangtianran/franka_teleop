@@ -1,10 +1,8 @@
 # Configuration classes
 from .config_teleop import (
     BaseTeleopConfig,
-    DynamixelTeleopConfig,
     SpacemouseTeleopConfig,
     OculusTeleopConfig,
-    FrankaTeleopConfig,  # Legacy compatibility
 )
 
 # Base class
@@ -16,14 +14,11 @@ from .teleop_factory import create_teleop, create_teleop_config, get_action_feat
 __all__ = [
     # Configuration classes
     "BaseTeleopConfig",
-    "DynamixelTeleopConfig",
     "SpacemouseTeleopConfig",
     "OculusTeleopConfig",
-    "FrankaTeleopConfig",
     # Base class
     "BaseTeleop",
     # Teleoperation implementations
-    "DynamixelTeleop",
     "SpacemouseTeleop",
     "OculusTeleop",
     "FrankaTeleop",
@@ -35,10 +30,6 @@ __all__ = [
 
 
 def __getattr__(name):
-    if name == "DynamixelTeleop":
-        from .dynamixel_teleop import DynamixelTeleop
-
-        return DynamixelTeleop
     if name == "SpacemouseTeleop":
         from .spacemouse_teleop import SpacemouseTeleop
 

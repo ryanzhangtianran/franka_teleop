@@ -9,7 +9,6 @@ setup(
     packages=find_packages(),
     python_requires=">=3.10",
     install_requires=[
-        "dynamixel_sdk",
         "easyhid",
         "placo"
     ],

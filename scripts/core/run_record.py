@@ -14,7 +14,6 @@ from scripts.utils.dataset_schema_utils import (
 from franka_interface import FrankaConfig, Franka
 from franka_interface.franka import HOME_JOINT_POSITION
 from franka_teleoperation.config_teleop import (
-    DynamixelTeleopConfig,
     SpacemouseTeleopConfig,
     OculusTeleopConfig,
 )
@@ -29,7 +28,6 @@ from lerobot.utils.control_utils import init_keyboard_listener
 from send2trash import send2trash
 import termios, sys
 from lerobot.utils.constants import HF_LEROBOT_HOME
-from scripts.utils.teleop_joint_offsets import get_start_joints, compute_joint_offsets
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.datasets.utils import hw_to_dataset_features
 from lerobot.utils.control_utils import sanity_check_dataset_robot_compatibility
@@ -69,7 +67,7 @@ class RecordConfig:
         self.dataset_schema_config: str | None = cfg.get("dataset_schema_config")
         
         # Teleop config - parse based on control mode
-        self.control_mode = teleop.get("control_mode", "isoteleop")
+        self.control_mode = teleop.get("control_mode", "spacemouse")
         self._parse_teleop_config(teleop)
         
         # Policy config
@@ -108,17 +106,7 @@ class RecordConfig:
     
     def _parse_teleop_config(self, teleop: Dict[str, Any]) -> None:
         """Parse teleoperation configuration based on control mode."""
-        if self.control_mode == "isoteleop":
-            dxl_cfg = teleop["dynamixel_config"]
-            self.port = dxl_cfg["port"]
-            self.use_gripper = dxl_cfg["use_gripper"]
-            self.joint_ids = dxl_cfg["joint_ids"]
-            self.joint_offsets = dxl_cfg["joint_offsets"]
-            self.joint_signs = dxl_cfg["joint_signs"]
-            self.gripper_config = dxl_cfg["gripper_config"]
-            self.hardware_offsets = dxl_cfg["hardware_offsets"]
-        
-        elif self.control_mode == "spacemouse":
+        if self.control_mode == "spacemouse":
             sm_cfg = teleop["spacemouse_config"]
             self.use_gripper = sm_cfg["use_gripper"]
             self.pose_scaler = sm_cfg["pose_scaler"]
@@ -135,7 +123,7 @@ class RecordConfig:
             self.oculus_robot_ip = placo_cfg.get("robot_ip", "192.168.110.15")
             self.oculus_robot_port = placo_cfg.get("robot_port", 4242)
             urdf_path = placo_cfg.get("ik_urdf_path", "")
-            # Resolve relative urdf_path to project root (lerobot_franka_isoteleop/)
+            # Resolve relative urdf_path to project root.
             if urdf_path and not Path(urdf_path).is_absolute():
                 project_root = Path(__file__).resolve().parent.parent.parent  # scripts/core/ -> scripts/ -> project root
                 urdf_path = str((project_root / urdf_path).resolve())
@@ -173,17 +161,7 @@ class RecordConfig:
     
     def create_teleop_config(self):
         """Create teleoperation configuration object."""
-        if self.control_mode == "isoteleop":
-            return DynamixelTeleopConfig(
-                port=self.port,
-                use_gripper=self.use_gripper,
-                hardware_offsets=self.hardware_offsets,
-                joint_ids=self.joint_ids,
-                joint_offsets=self.joint_offsets,
-                joint_signs=self.joint_signs,
-                gripper_config=self.gripper_config,
-            )
-        elif self.control_mode == "spacemouse":
+        if self.control_mode == "spacemouse":
             return SpacemouseTeleopConfig(
                 use_gripper=self.use_gripper,
                 pose_scaler=self.pose_scaler,
@@ -207,26 +185,6 @@ class RecordConfig:
             )
         else:
             raise ValueError(f"Unsupported control mode: {self.control_mode}")
-
-
-def check_joint_offsets(record_cfg: RecordConfig):
-    """Check the joint_offsets is set and correct."""
-
-    if record_cfg.joint_offsets is None:
-        raise ValueError("joint_offsets is None. Please check teleop_joint_offsets.py output.")
-
-    start_joints = get_start_joints(record_cfg)
-    if start_joints is None:
-        raise RuntimeError("Failed to retrieve start joints from Franka robot.")
-
-    joint_offsets = compute_joint_offsets(record_cfg, start_joints)
-
-    if joint_offsets != record_cfg.joint_offsets:
-        raise ValueError(
-            f"Computed joint_offsets {joint_offsets} != provided joint_offsets {record_cfg.joint_offsets}. "
-            "Please check teleop_joint_offsets.py output."
-        )
-    logging.info("Joint offsets verified successfully.")
 
 def handle_incomplete_dataset(dataset_path):
     if dataset_path.exists():
@@ -428,10 +386,6 @@ def run_record(record_cfg: RecordConfig):
         config_dir = Path(__file__).resolve().parent.parent / "config"
         dataset_schema_config = load_dataset_schema_config(record_cfg.dataset_schema_config, config_dir)
 
-        # Check joint offsets
-        # if not record_cfg.debug:
-        #     check_joint_offsets(record_cfg)        
-        
         # Create the robot and teleoperator configurations
         camera_config = create_camera_configs(record_cfg)
         

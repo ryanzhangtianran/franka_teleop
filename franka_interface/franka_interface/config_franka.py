@@ -14,5 +14,5 @@ class FrankaConfig(RobotConfig):
     debug: bool = True
     close_threshold: float = 0.7
     cameras: dict[str, CameraConfig] = field(default_factory=dict)
-    control_mode: str = "isoteleop"
+    control_mode: str = "spacemouse"
     execute_mode: str = "ee_pose"

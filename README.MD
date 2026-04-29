@@ -129,16 +129,12 @@ franka-help
 #   franka-reset           Reset the robot to initial state
 #   franka-train          Train a policy on the recorded dataset
 
-# Utility Commands:
-#   utils-joint-offsets   Compute joint offsets for teleoperation
-
 # Tool Commands:
 #   tools-check-dataset   Check local dataset information
 #   tools-check-rs        Retrieve connected RealSense camera serial numbers
 
 # Shell Tools:
 #   map_gripper.sh        Map Gripper Serial Port
-#   check_master_port.sh  Get the Master Arm's Persistent Serial Identifier
 
 # Test Commands:
 #   test-gripper-ctrl     Run gripper control command (operate the gripper)
@@ -223,7 +219,7 @@ lerobot-edit-dataset
 
 - **Right Arrow Key**  
    1. Press the right arrow key: end the current episode and save the data. The program will pause.  
-   2. Enter the **reset** phase: press enter key to continue (the slave arm will follow the master arm), use the master arm to return the slave arm to its initial position.  
+   2. Enter the **reset** phase: press enter key to continue, then return the robot to its initial position.  
    3. Press the right arrow key again to start recording the next episode.
 
 - **Left Arrow Key**  
@@ -270,7 +266,7 @@ lerobot-edit-dataset
 1. Complete step `2. Get and configure required parameters`.
 2. Fill in the task instruction in `record_cfg.yaml` under `task.description` and set `repo_id` according to the dataset naming rules.
 3. Check and adjust other parameters in `record_cfg.yaml` to ensure correctness.
-4. Run `franka-record`. For safety, ensure the master and slave arm joint angles are approximately aligned; `franka-record` will automatically perform the `2.4 Master-Slave Joint Angle Error Check`. Then follow `8. Recording Control Keys` to complete the recording.
+4. Run `franka-record`. Then follow `8. Recording Control Keys` to complete the recording.
 5. After recording, a `dataset_info.txt` file will be automatically created in the same directory to store local dataset information. If you have manually deleted any datasets, update the `dataset_info.txt` using:
 ```bash
 tools-check-dataset

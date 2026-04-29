@@ -17,10 +17,10 @@ def create_teleop(config: BaseTeleopConfig) -> BaseTeleop:
     Create a teleoperation instance based on the configuration.
     
     Args:
-        config: Teleoperation configuration (DynamixelTeleopConfig, SpacemouseTeleopConfig, or OculusTeleopConfig)
+        config: Teleoperation configuration (SpacemouseTeleopConfig or OculusTeleopConfig)
     
     Returns:
-        A teleoperation instance (DynamixelTeleop, SpacemouseTeleop, or OculusTeleop)
+        A teleoperation instance (SpacemouseTeleop or OculusTeleop)
     
     Raises:
         ValueError: If the control mode is not supported
@@ -37,7 +37,7 @@ def create_teleop(config: BaseTeleopConfig) -> BaseTeleop:
     
     else:
         raise ValueError(f"Unsupported control mode: {config.control_mode}. "
-                        f"Supported modes: isoteleop, spacemouse, oculus")
+                        f"Supported modes: spacemouse, oculus")
 
 
 def create_teleop_config(control_mode: str, **kwargs) -> BaseTeleopConfig:
@@ -45,7 +45,7 @@ def create_teleop_config(control_mode: str, **kwargs) -> BaseTeleopConfig:
     Create a teleoperation configuration based on the control mode.
     
     Args:
-        control_mode: The teleoperation mode ("isoteleop", "spacemouse", or "oculus")
+        control_mode: The teleoperation mode ("spacemouse" or "oculus")
         **kwargs: Configuration parameters specific to each mode
     
     Returns:
@@ -60,7 +60,7 @@ def create_teleop_config(control_mode: str, **kwargs) -> BaseTeleopConfig:
         return OculusTeleopConfig(**kwargs)
     else:
         raise ValueError(f"Unsupported control mode: {control_mode}. "
-                        f"Supported modes: isoteleop, spacemouse, oculus")
+                        f"Supported modes: spacemouse, oculus")
 
 
 # Convenience function to get action features for a control mode
@@ -69,7 +69,7 @@ def get_action_features(control_mode: str, use_gripper: bool = True) -> dict:
     Get the action features for a given control mode.
     
     Args:
-        control_mode: The teleoperation mode ("isoteleop", "spacemouse", or "oculus")
+        control_mode: The teleoperation mode ("spacemouse" or "oculus")
         use_gripper: Whether gripper is used
     
     Returns:

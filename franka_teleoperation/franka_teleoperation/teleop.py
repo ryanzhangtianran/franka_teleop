@@ -44,7 +44,7 @@ class FrankaTeleop(Teleoperator):
     """
 
     config_class = BaseTeleopConfig
-    name = "IsoTeleop"
+    name = "FrankaTeleop"
     
     def __init__(self, config: BaseTeleopConfig):
         super().__init__(config)

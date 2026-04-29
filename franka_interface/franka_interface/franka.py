@@ -186,14 +186,7 @@ class Franka(Robot):
     @property
     def action_features(self) -> dict[str, type]:
         """Return action features based on control mode."""
-        if self.config.control_mode == "isoteleop":
-            features = {}
-            for i in range(self._num_joints):
-                features[f"joint_{i+1}.pos"] = float
-            if self.config.use_gripper:
-                features["gripper_position"] = float
-            return features
-        elif self.config.control_mode in ["spacemouse", "oculus"]:
+        if self.config.control_mode in ["spacemouse", "oculus"]:
             features = {}
             # Delta EE pose (always present)
             for axis in ["x", "y", "z", "rx", "ry", "rz"]:
@@ -231,17 +224,10 @@ class Franka(Robot):
                         force=self._gripper_force,
                     )
                 else:
-                    self._robot.gripper_goto(
-                        width=0.0,
-                        speed=self._gripper_grasp_speed,
-                        force=self._gripper_grasp_force,
-                        blocking=True,
-                    )
-                    close_state = self._robot.gripper_get_state()
                     self._robot.gripper_grasp(
                         speed=self._gripper_grasp_speed,
                         force=self._gripper_grasp_force,
-                        grasp_width=max(0.0, float(close_state["width"])),
+                        grasp_width=0.0,
                         epsilon_inner=self._gripper_grasp_epsilon,
                         epsilon_outer=self._gripper_grasp_epsilon,
                         blocking=True,
@@ -260,9 +246,7 @@ class Franka(Robot):
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
         
-        if self.config.control_mode == "isoteleop":
-            self._send_action_isoteleop(action)
-        elif self.config.control_mode == "spacemouse":
+        if self.config.control_mode == "spacemouse":
             self._send_action_cartesian(action)
         elif self.config.control_mode == "oculus":
             if self.config.execute_mode == "joint":
@@ -273,33 +257,6 @@ class Franka(Robot):
             raise ValueError(f"Unsupported control mode: {self.config.control_mode}")
         
         return action
-
-    def _send_action_isoteleop(self, action: dict[str, Any]) -> None:
-        """Send action in isoteleop mode (joint positions)."""
-        target_joints = np.array([action[f"joint_{i+1}.pos"] for i in range(self._num_joints)])
-        
-        if not self.config.debug:
-            try:
-                joint_positions = self._robot.robot_get_joint_positions()
-                max_delta = (np.abs(joint_positions - target_joints)).max()
-                
-                if max_delta > 0.3:
-                    print("MOVING TOO FAST! SLOW DOWN!")
-                    steps = min(int(max_delta / 0.05), 100)
-                    for jnt in np.linspace(joint_positions, target_joints, steps):
-                        self._robot.robot_update_desired_joint_positions(jnt)
-                        time.sleep(0.02)
-                else:
-                    self._robot.robot_update_desired_joint_positions(target_joints)
-            except Exception as e:
-                logger.warning(f"[ROBOT] isoteleop action failed: {e}, trying to restart controller...")
-                try:
-                    self._robot.robot_start_joint_impedance_control()
-                except Exception as e2:
-                    logger.error(f"[ROBOT] Failed to restart controller: {e2}")
-        
-        if "gripper_position" in action:
-            self._handle_gripper(action["gripper_position"], is_binary=False)
 
     def _send_action_cartesian(self, action: dict[str, Any]) -> None:
         """Send action in spacemouse/oculus mode (delta ee pose)."""
